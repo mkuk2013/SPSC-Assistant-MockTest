@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPSC Assistant (BPS-16) Pro Mock Test</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <!-- jsPDF and html2canvas for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Clarity Pro Theme --- */
+        :root {
+            /* Light Mode */
+            --bg-light: #f8f9fa;
+            --card-light: #ffffff;
+            --text-light: #212529;
+            --text-muted-light: #6c757d;
+            --border-light: #dee2e6;
+            --primary-accent: #0d6efd;
+            --primary-accent-hover: #0b5ed7;
+            
+            /* Dark Mode */
+            --bg-dark: #111827;
+            --card-dark: #1f2937;
+            --text-dark: #e5e7eb;
+            --text-muted-dark: #9ca3af;
+            --border-dark: #374151;
+        }
+
+        body {
+            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: var(--bg-light);
+        }
+        .dark body { background-color: var(--bg-dark); }
+        
+        .main-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-light);
+            background-color: var(--card-light);
+            color: var(--text-light);
+            border-radius: 1rem;
+        }
+        .dark .main-card {
+            border-color: var(--border-dark);
+            background-color: var(--card-dark);
+            color: var(--text-dark);
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            color: white;
+        }
+        
+        .text-primary-color { color: var(--text-light); }
+        .dark .text-primary-color { color: var(--text-dark); }
+        .text-muted { color: var(--text-muted-light); }
+        .dark .text-muted { color: var(--text-muted-dark); }
+        
+        .btn {
+            transition: all 0.2s ease-in-out;
+            border: none;
+            font-weight: 600;
+            border-radius: 0.5rem;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
+        .btn:active { transform: translateY(0px); box-shadow: none; }
+        
+        .btn-primary { 
+            background-color: var(--primary-accent);
+            color: white;
+        }
+        .btn-primary:hover { background-color: var(--primary-accent-hover); }
+
+        #question-palette { display: flex; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: #ced4da #f1f3f5; }
+        .dark #question-palette { scrollbar-color: #495057 #343a40; }
+        #question-palette::-webkit-scrollbar { height: 8px; }
+        #question-palette::-webkit-scrollbar-track { background: #f1f3f5; border-radius: 10px; }
+        .dark #question-palette::-webkit-scrollbar-track { background: #343a40; }
+        #question-palette::-webkit-scrollbar-thumb { background-color: #ced4da; border-radius: 10px; }
+        .dark #question-palette::-webkit-scrollbar-thumb { background-color: #495057; }
+
+        .question-palette-btn {
+            width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; border-radius: 50%; cursor: pointer; transition: all 0.2s ease-in-out; border: 2px solid transparent;
+        }
+        .current { 
+            transform: scale(1.15); 
+            box-shadow: 0 0 15px var(--primary-accent); 
+            border-color: var(--primary-accent); 
+        }
+        
+        .option-item { border-color: var(--border-light); transition: all 0.2s ease; border-radius: 0.75rem; }
+        .dark .option-item { border-color: var(--border-dark); }
+        .option-item:hover { 
+            transform: translateX(5px); 
+            border-color: var(--primary-accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .selected-answer { 
+            background-color: #e0e7ff !important; 
+            border-color: var(--primary-accent) !important; 
+        }
+        .dark .selected-answer { 
+            background-color: rgba(67, 56, 202, 0.2) !important; 
+            border-color: #a5b4fc !important; 
+        }
+        
+        .correct-answer { 
+            border-color: #16a34a !important; 
+            background-color: #d1fae5 !important; 
+        }
+        .correct-answer label { color: #065f46 !important; font-weight: 600; }
+        .dark .correct-answer { 
+            border-color: #34d399 !important; 
+            background-color: rgba(16, 185, 129, 0.2) !important;
+        }
+        .dark .correct-answer label { color: #a7f3d0 !important; }
+        
+        .incorrect-answer { 
+            border-color: #ef4444 !important; 
+            background-color: #fee2e2 !important; 
+        }
+        .incorrect-answer label { color: #b91c1c !important; font-weight: 600; }
+        .dark .incorrect-answer { 
+            border-color: #f87171 !important; 
+            background-color: rgba(239, 68, 68, 0.2) !important;
+        }
+        .dark .incorrect-answer label { color: #fca5a5 !important; }
+
+        .donut-chart-container { position: relative; width: 150px; height: 150px; }
+        .donut-chart-bg { fill: var(--border-light); }
+        .dark .donut-chart-bg { fill: var(--border-dark); }
+        .donut-chart-fg { fill: none; stroke: var(--primary-accent); stroke-dasharray: 0, 100; transition: stroke-dasharray 1s ease-in-out; }
+        .donut-chart-text { font-size: 1.25rem; font-weight: 700; fill: var(--text-light); dominant-baseline: middle; text-anchor: middle; }
+        .dark .donut-chart-text { fill: var(--text-dark); }
+
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="gradient-bg">
+    
+    <div id="main-container" class="fade-in">
+
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl main-card p-8">
+            <div class="flex flex-col items-center">
+                <div class="p-2 bg-white rounded-full shadow-md mb-4">
+                    <img src="https://placehold.co/100x100/0d6efd/ffffff?text=SPSC" alt="SPSC Logo" class="rounded-full">
+                </div>
+                <h1 class="text-2xl font-bold text-center text-primary-color">Assistant (BPS-16) Mock Test</h1>
+                <p class="text-sm text-muted mt-1 mb-6">Enter password to start the exam</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="password" class="block mb-2 text-sm font-medium text-muted">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 bg-gray-100 dark:bg-black/20 border border-gray-300 dark:border-[var(--border-dark)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-accent)] transition text-primary-color">
+                </div>
+                <p id="error-message" class="text-red-500 text-sm mb-4 h-5"></p>
+                <button type="submit" class="btn btn-primary w-full py-3 px-4 flex items-center justify-center">
+                    Login <i class="fas fa-sign-in-alt ml-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Instructions Page -->
+    <div id="instructions-page" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl rounded-2xl main-card p-8">
+            <h1 class="text-2xl font-bold text-center mb-6 text-primary-color">Exam Instructions</h1>
+            <div class="text-muted space-y-4">
+                <p class="flex items-start"><i class="fas fa-list-ol mr-3 mt-1 text-[var(--primary-accent)]"></i><span class="text-primary-color">Total Questions:</span><span class="font-semibold ml-2 text-primary-color">60</span></p>
+                <p class="flex items-start"><i class="fas fa-clock mr-3 mt-1 text-[var(--primary-accent)]"></i><span class="text-primary-color">Total Time:</span><span class="font-semibold ml-2 text-primary-color">60 Minutes</span></p>
+                <p class="flex items-start"><i class="fas fa-check-circle mr-3 mt-1 text-green-500"></i><span class="text-primary-color">Each correct answer carries 1 mark. No negative marking.</span></p>
+                <p class="flex items-start"><i class="fas fa-palette mr-3 mt-1 text-[var(--primary-accent)]"></i><span class="text-primary-color">Use the question palette to navigate between questions.</span></p>
+                <p class="flex items-start"><i class="fas fa-bookmark mr-3 mt-1 text-purple-500"></i><span class="text-primary-color">Use 'Mark for Review' button to save a question for later.</span></p>
+                <p class="flex items-start"><i class="fas fa-power-off mr-3 mt-1 text-red-500"></i><span class="text-primary-color">The test will be submitted automatically when the timer runs out.</span></p>
+            </div>
+            <div class="mt-8 text-center">
+                 <button id="start-test-btn" class="btn btn-primary py-3 px-8">
+                    Start Test Now
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="test-container" class="hidden">
+        <!-- Header -->
+        <header class="header-gradient text-white py-4 shadow-lg sticky top-0 z-40">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold "><i class="fas fa-graduation-cap mr-2"></i>SPSC Mock Test</h1>
+                    <div class="flex items-center gap-4">
+                        <div class="timer bg-white/20 px-4 py-2 rounded-full text-sm font-semibold" id="timer">60:00</div>
+                        <button class="btn bg-white/20 hover:bg-white/30 w-10 h-10 flex items-center justify-center rounded-full" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Test Area -->
+        <main class="container mx-auto p-4 md:p-8">
+            <div class="rounded-2xl main-card p-5 md:p-8">
+                <!-- Question Area -->
+                <div id="question-area" class="mb-6">
+                    <h2 class="text-lg font-semibold mb-2 text-primary-color" id="question-number">Question 1/60</h2>
+                    <p class="text-base leading-relaxed text-muted" id="question-text">Loading question...</p>
+                </div>
+                <div id="options-area" class="space-y-3 mb-8"></div>
+                
+                <!-- Navigation Buttons -->
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-8">
+                    <button id="prev-btn" class="btn bg-gray-600 hover:bg-gray-700 text-white py-2 px-6">Previous</button>
+                    <div class="flex gap-2">
+                        <button id="mark-review-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white py-2 px-6">Mark for Review</button>
+                        <button id="next-btn" class="btn btn-primary py-2 px-6">Next</button>
+                        <button id="submit-btn" class="hidden btn bg-green-600 hover:bg-green-700 text-white py-2 px-6">Submit Test</button>
+                    </div>
+                </div>
+
+                <!-- Question Palette -->
+                <div class="border-t border-gray-200 dark:border-[var(--border-dark)] pt-6">
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <h3 class="font-semibold text-primary-color">Question Palette</h3>
+                        <div class="flex items-center space-x-3 text-xs text-muted">
+                            <span class="flex items-center"><div class="w-3 h-3 rounded-full bg-[#198754] mr-1.5"></div>Answered</span>
+                            <span class="flex items-center"><div class="w-3 h-3 rounded-full bg-[#dc3545] mr-1.5"></div>Not Answered</span>
+                            <span class="flex items-center"><div class="w-3 h-3 rounded-full bg-[#6f42c1] mr-1.5"></div>Marked</span>
+                        </div>
+                    </div>
+                    <div id="question-palette" class="gap-2"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Result Page -->
+    <div id="result-page" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-3xl rounded-2xl main-card p-8">
+            <div id="result-content">
+                <h1 class="text-3xl font-bold text-center mb-2 text-primary-color">Test Result</h1>
+                <p class="text-center font-medium text-lg mb-8" id="passing-status-text"></p>
+                <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+                    <div class="donut-chart-container">
+                        <svg viewBox="0 0 36 36">
+                            <path class="donut-chart-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-width="3"></path>
+                            <path class="donut-chart-fg" id="score-circle" stroke-width="3" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                            <text x="18" y="18" class="donut-chart-text" id="score-percentage">0%</text>
+                        </svg>
+                    </div>
+                    <div class="w-full md:w-1/2 space-y-4">
+                        <div class="flex justify-between items-center bg-slate-500 text-white p-3 rounded-lg">
+                            <span class="font-semibold"><i class="fas fa-list-ol mr-2 opacity-75"></i>Total Marks</span>
+                            <span id="total-marks" class="font-bold text-lg">60</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-green-600 text-white p-3 rounded-lg">
+                            <span class="font-semibold"><i class="fas fa-check-circle mr-2 opacity-75"></i>Correct</span>
+                            <span id="correct-answers" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-red-600 text-white p-3 rounded-lg">
+                            <span class="font-semibold"><i class="fas fa-times-circle mr-2 opacity-75"></i>Incorrect</span>
+                            <span id="incorrect-answers" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-yellow-500 text-white p-3 rounded-lg">
+                            <span class="font-semibold"><i class="fas fa-minus-circle mr-2 opacity-75"></i>Not Attempted</span>
+                            <span id="not-attempted" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-blue-700 text-white p-3 rounded-lg">
+                            <span class="font-semibold"><i class="fas fa-star mr-2 opacity-75"></i>Final Score</span>
+                            <span id="obtained-marks" class="font-bold text-lg">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-3 md:space-y-0 md:space-x-4 mt-8">
+                <button id="review-answers-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white w-full md:w-auto font-bold py-2 px-6"><i class="fas fa-search mr-2"></i>Review</button>
+                <button id="save-pdf-btn" class="btn bg-teal-500 hover:bg-teal-600 text-white w-full md:w-auto font-bold py-2 px-6"><i class="fas fa-file-pdf mr-2"></i>Save PDF</button>
+                <button id="restart-test-btn" class="btn btn-primary w-full md:w-auto font-bold py-2 px-6"><i class="fas fa-redo mr-2"></i>Restart</button>
+            </div>
+        </div>
+    </div>
+    <!-- Review Page -->
+     <div id="review-page" class="hidden container mx-auto p-4 md:p-8">
+        <div class="rounded-2xl main-card p-5 md:p-8">
+            <div class="flex justify-between items-center border-b border-gray-200 dark:border-[var(--border-dark)] pb-4 mb-6">
+                <h1 class="text-2xl font-bold text-primary-color">Answer Review</h1>
+                <button id="back-to-result-btn" class="btn btn-primary font-bold py-2 px-4">Back to Result</button>
+            </div>
+            <div id="review-content" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="rounded-lg shadow-xl p-6 w-full max-w-sm text-center main-card">
+            <h2 class="text-xl font-bold mb-4 text-primary-color">Confirm Submission</h2>
+            <p class="text-muted mb-6">Are you sure you want to submit the test?</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-submit-btn" class="btn bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 font-bold py-2 px-6">Cancel</button>
+                <button id="confirm-submit-btn" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6">Submit</button>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <footer class="text-center py-6 text-sm text-muted">
+        <p>&copy; 2025 SPSC Assistant BPS-16 Mock Test Series. Powered By Mock Test Hub</p>
+    </footer>
+
+    <script>
+    // Global theme functions to prevent reference errors
+    function applyTheme(isDark) {
+        const themeIcon = $('#themeToggle i');
+        if (isDark) {
+            $('html').addClass('dark');
+            themeIcon.removeClass('fa-moon').addClass('fa-sun');
+        } else {
+            $('html').removeClass('dark');
+            themeIcon.removeClass('fa-sun').addClass('fa-moon');
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = $('html').hasClass('dark');
+        localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+        applyTheme(!isDark);
+    }
+
+    $(document).ready(function() {
+        const questions = [
+            // Part 1: General Knowledge, Pakistan Affairs, Current Affairs, Everyday Science, Tech, Islamiat (36 Questions)
+            { question: "Which is the highest mountain peak in the world?", options: ["K2", "Kangchenjunga", "Mount Everest", "Lhotse"], answer: "Mount Everest" },
+            { question: "The currency of Japan is:", options: ["Yuan", "Won", "Yen", "Ringgit"], answer: "Yen" },
+            { question: "The headquarters of the United Nations (UN) is located in:", options: ["Geneva", "Paris", "New York City", "Washington D.C."], answer: "New York City" },
+            { question: "Which country is known as the 'Land of the Rising Sun'?", options: ["China", "South Korea", "Japan", "Thailand"], answer: "Japan" },
+            { question: "What is the largest ocean on Earth?", options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], answer: "Pacific Ocean" },
+            { question: "The famous painting 'Mona Lisa' was created by which artist?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], answer: "Leonardo da Vinci" },
+            { question: "Who was the first Governor-General of Pakistan?", options: ["Liaquat Ali Khan", "Quaid-e-Azam Muhammad Ali Jinnah", "Khawaja Nazimuddin", "Ghulam Muhammad"], answer: "Quaid-e-Azam Muhammad Ali Jinnah" },
+            { question: "The Pakistan Resolution (Qarardad-e-Pakistan) was passed on:", options: ["August 14, 1947", "March 23, 1940", "September 6, 1965", "December 25, 1876"], answer: "March 23, 1940" },
+            { question: "What is the national animal of Pakistan?", options: ["Tiger", "Lion", "Markhor", "Snow Leopard"], answer: "Markhor" },
+            { question: "The Karakoram Highway connects Pakistan with which country?", options: ["Afghanistan", "Iran", "India", "China"], answer: "China" },
+            { question: "Which is the largest province of Pakistan by area?", options: ["Punjab", "Sindh", "Khyber Pakhtunkhwa", "Balochistan"], answer: "Balochistan" },
+            { question: "The 1973 Constitution of Pakistan was promulgated by:", options: ["Ayub Khan", "Yahya Khan", "Zulfikar Ali Bhutto", "Zia-ul-Haq"], answer: "Zulfikar Ali Bhutto" },
+            { question: "Who is the current Secretary-General of the United Nations (as of late 2025)?", options: ["Ban Ki-moon", "Kofi Annan", "António Guterres", "Boutros Boutros-Ghali"], answer: "António Guterres" },
+            { question: "The term 'CPEC' stands for:", options: ["China-Pakistan Economic Cooperation", "China-Pakistan Economic Corridor", "Central Pakistan Economic Corridor", "China-Punjab Economic Corridor"], answer: "China-Pakistan Economic Corridor" },
+            { question: "Which country hosted the 2024 Summer Olympics?", options: ["USA", "Japan", "France", "Australia"], answer: "France" },
+            { question: "The chemical formula for water is:", options: ["CO2", "O2", "H2O", "NaCl"], answer: "H2O" },
+            { question: "Which planet in our solar system is known as the 'Red Planet'?", options: ["Venus", "Mars", "Jupiter", "Saturn"], answer: "Mars" },
+            { question: "The main gas that makes up the Earth's atmosphere is:", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"], answer: "Nitrogen" },
+            { question: "The deficiency of Vitamin C causes which disease?", options: ["Rickets", "Scurvy", "Beriberi", "Night blindness"], answer: "Scurvy" },
+            { question: "What is the unit of measurement for electrical resistance?", options: ["Ampere", "Volt", "Watt", "Ohm"], answer: "Ohm" },
+            { question: "The process by which plants make their own food is called:", options: ["Respiration", "Photosynthesis", "Transpiration", "Germination"], answer: "Photosynthesis" },
+            { question: "What does 'CPU' stand for in computing?", options: ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Computer Processing Utility"], answer: "Central Processing Unit" },
+            { question: "What does 'HTTP' stand for?", options: ["HyperText Transfer Protocol", "HyperText Transmission Protocol", "Hyperlink Transfer Protocol", "Hyperlink Text Transmission"], answer: "HyperText Transfer Protocol" },
+            { question: "A collection of 8 bits is called a:", options: ["Nibble", "Word", "Byte", "Record"], answer: "Byte" },
+            { question: "Which social media platform is famous for its short video format?", options: ["Facebook", "Twitter", "LinkedIn", "TikTok"], answer: "TikTok" },
+            { question: "What does 'Wi-Fi' stand for?", options: ["Wireless Fidelity", "Wireless Functionality", "Wired Fidelity", "It is not an abbreviation"], answer: "Wireless Fidelity" },
+            { question: "How many Surahs are there in the Holy Quran?", options: ["112", "114", "116", "118"], answer: "114" },
+            { question: "The first pillar of Islam is:", options: ["Salat (Prayer)", "Sawm (Fasting)", "Shahada (Faith)", "Zakat (Charity)"], answer: "Shahada (Faith)" },
+            { question: "The Battle of Badr was fought in which Hijri year?", options: ["1 AH", "2 AH", "3 AH", "4 AH"], answer: "2 AH" },
+            { question: "Which Surah of the Quran is known as the 'Heart of the Quran'?", options: ["Surah Al-Fatiha", "Surah Al-Baqarah", "Surah Yaseen", "Surah Ar-Rahman"], answer: "Surah Yaseen" },
+            { question: "The 'Cave of Hira' is located in which mountain?", options: ["Mount Uhud", "Jabal al-Nour", "Mount Sinai", "Mount Safa"], answer: "Jabal al-Nour" },
+            { question: "Who is known as 'Asadullah' (The Lion of Allah)?", options: ["Hazrat Umar (R.A)", "Hazrat Ali (R.A)", "Hazrat Khalid ibn al-Walid (R.A)", "Hazrat Hamza (R.A)"], answer: "Hazrat Ali (R.A)" },
+            { question: "Which city is the capital of Saudi Arabia?", options: ["Jeddah", "Mecca", "Medina", "Riyadh"], answer: "Riyadh" },
+            { question: "The largest organ of the human body is:", options: ["Liver", "Brain", "Heart", "Skin"], answer: "Skin" },
+            { question: "The headquarters of the World Health Organization (WHO) is in:", options: ["New York", "London", "Paris", "Geneva"], answer: "Geneva" },
+            { question: "What is the capital of Canada?", options: ["Toronto", "Vancouver", "Montreal", "Ottawa"], answer: "Ottawa" },
+
+            // Part 2: English (24 Questions)
+            { question: "What does the idiom 'a piece of cake' mean?", options: ["A difficult task", "A very easy task", "A delicious dessert", "A small portion"], answer: "A very easy task" },
+            { question: "The phrase 'once in a blue moon' means:", options: ["Frequently", "Very rarely", "Every month", "On a full moon night"], answer: "Very rarely" },
+            { question: "To 'spill the beans' means to:", options: ["Be clumsy", "waste food", "Reveal a secret", "Plant a garden"], answer: "Reveal a secret" },
+            { question: "If you 'hit the books', it means you:", options: ["Physically strike some books", "Study very hard", "Dislike reading", "Work in a library"], answer: "Study very hard" },
+            { question: "The phrase 'barking up the wrong tree' means:", options: ["A dog is confused", "Choosing the wrong course of action", "To climb a dangerous tree", "Making a lot of noise"], answer: "Choosing the wrong course of action" },
+            { question: "Choose the correct synonym for 'Brave'.", options: ["Timid", "Cowardly", "Courageous", "Afraid"], answer: "Courageous" },
+            { question: "Select the synonym for 'Enormous'.", options: ["Tiny", "Average", "Huge", "Weak"], answer: "Huge" },
+            { question: "The synonym for 'Happy' is:", options: ["Sorrowful", "Joyful", "Angry", "Tired"], answer: "Joyful" },
+            { question: "What is a synonym for 'Essential'?", options: ["Unimportant", "Optional", "Crucial", "Extra"], answer: "Crucial" },
+            { question: "Choose the antonym for 'Ancient'.", options: ["Old", "Aged", "Modern", "Past"], answer: "Modern" },
+            { question: "Select the antonym for 'Generous'.", options: ["Kind", "Selfish", "Giving", "Charitable"], answer: "Selfish" },
+            { question: "The antonym for 'Victory' is:", options: ["Triumph", "Success", "Win", "Defeat"], answer: "Defeat" },
+            { question: "What is the antonym for 'Simple'?", options: ["Easy", "Plain", "Complex", "Basic"], answer: "Complex" },
+            { question: "He is afraid ______ the dark.", options: ["from", "with", "of", "about"], answer: "of" },
+            { question: "She is very good ______ painting.", options: ["in", "on", "at", "for"], answer: "at" },
+            { question: "I am looking forward ______ meeting you.", options: ["for", "with", "at", "to"], answer: "to" },
+            { question: "Please divide the cake ______ the two brothers.", options: ["among", "between", "in", "with"], answer: "between" },
+            { question: "Which of the following sentences is grammatically correct?", options: ["He don't like coffee.", "He doesn't likes coffee.", "He doesn't like coffee.", "He not like coffee."], answer: "He doesn't like coffee." },
+            { question: "I ______ finished my homework.", options: ["has", "have", "am", "is"], answer: "have" },
+            { question: "She ______ to the market yesterday.", options: ["go", "goes", "gone", "went"], answer: "went" },
+            { question: "A car is to a 'road' as a ship is to ______.", options: ["Air", "Water", "Land", "Port"], answer: "Water" },
+            { question: "A 'doctor' is to a 'hospital' as a 'teacher' is to a ______.", options: ["Book", "Student", "School", "Classroom"], answer: "School" },
+            { question: "'Eye' is to 'see' as 'ear' is to ______.", options: ["Smell", "Taste", "Hear", "Touch"], answer: "Hear" },
+            { question: "'Puppy' is to 'dog' as 'kitten' is to ______.", options: ["Cat", "Cow", "Lion", "Horse"], answer: "Cat" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let reviewStatus = new Array(questions.length).fill(false);
+        let timerInterval;
+        let timeLeft = 3600;
+
+        // --- THEME ---
+        $('#themeToggle').on('click', toggleTheme);
+        applyTheme(localStorage.getItem('theme') === 'dark');
+
+        // --- NAVIGATION & STATE MANAGEMENT ---
+        function showPage(pageId) {
+            $('#login-page, #instructions-page, #test-container, #result-page, #review-page').addClass('hidden');
+            $('#' + pageId).removeClass('hidden');
+        }
+
+        $('#login-form').on('submit', function(e) {
+            e.preventDefault();
+            if ($('#password').val() === 'spscexams2025') {
+                showPage('instructions-page');
+            } else {
+                $('#error-message').text('Incorrect password.').delay(2000).fadeOut('slow', function(){ $(this).text('').show(); });
+            }
+        });
+
+        $('#start-test-btn').on('click', function() {
+            showPage('test-container');
+            startTest();
+        });
+
+        // --- TEST LOGIC ---
+        function startTest() {
+            currentQuestionIndex = 0;
+            userAnswers.fill(null);
+            reviewStatus.fill(false);
+            timeLeft = 3600;
+            clearInterval(timerInterval);
+            startTimer();
+            buildPalette();
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                $('#timer').text(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                if (timeLeft <= 0) submitTest(true); // Auto-submit
+            }, 1000);
+        }
+
+        function buildPalette() {
+            const palette = $('#question-palette');
+            palette.empty();
+            questions.forEach((_, index) => {
+                const btn = $(`<button class="question-palette-btn">${index + 1}</button>`);
+                btn.on('click', () => jumpToQuestion(index));
+                palette.append(btn);
+            });
+        }
+
+        function loadQuestion(index) {
+            const question = questions[index];
+            $('#question-number').text(`Question ${index + 1}/${questions.length}`);
+            $('#question-text').text(question.question);
+            const optionsArea = $('#options-area');
+            optionsArea.empty();
+            question.options.forEach(option => {
+                const optionDiv = $(`
+                    <div class="option-item flex items-center p-3 rounded-lg border-2 cursor-pointer transition">
+                        <label class="text-base w-full cursor-pointer text-primary-color">${option}</label>
+                    </div>`);
+                optionDiv.on('click', () => {
+                    userAnswers[currentQuestionIndex] = option;
+                    loadQuestion(currentQuestionIndex);
+                });
+                if (userAnswers[index] === option) optionDiv.addClass('selected-answer');
+                optionsArea.append(optionDiv);
+            });
+            updateNavigationButtons();
+            updatePalette();
+            
+            // Auto-scroll palette
+            const currentButton = $('#question-palette .current');
+            if(currentButton.length > 0) {
+                currentButton[0].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }
+        }
+
+        function updateNavigationButtons() {
+            $('#prev-btn').toggle(currentQuestionIndex > 0);
+            $('#next-btn').toggle(currentQuestionIndex < questions.length - 1);
+            $('#submit-btn').toggle(currentQuestionIndex === questions.length - 1);
+            $('#mark-review-btn').text(reviewStatus[currentQuestionIndex] ? 'Unmark' : 'Mark for Review');
+        }
+
+        function updatePalette() {
+            $('#question-palette .question-palette-btn').each(function(index) {
+                $(this).removeClass('current not-answered answered marked answered-marked');
+                const isAnswered = userAnswers[index] !== null;
+                const isMarked = reviewStatus[index];
+
+                if (isAnswered && isMarked) $(this).addClass('answered-marked bg-purple-500 text-white');
+                else if (isAnswered) $(this).addClass('answered bg-green-500 text-white');
+                else if (isMarked) $(this).addClass('marked bg-purple-500 text-white');
+                else $(this).addClass('not-answered bg-red-500 text-white');
+
+                if (index === currentQuestionIndex) $(this).addClass('current');
+            });
+        }
+
+        function jumpToQuestion(index) {
+            currentQuestionIndex = index;
+            loadQuestion(index);
+        }
+
+        $('#next-btn').on('click', () => { if (currentQuestionIndex < questions.length - 1) jumpToQuestion(currentQuestionIndex + 1); });
+        $('#prev-btn').on('click', () => { if (currentQuestionIndex > 0) jumpToQuestion(currentQuestionIndex - 1); });
+        $('#mark-review-btn').on('click', () => {
+            reviewStatus[currentQuestionIndex] = !reviewStatus[currentQuestionIndex];
+            updatePalette();
+            updateNavigationButtons();
+        });
+
+        // --- SUBMISSION ---
+        $('#submit-btn').on('click', () => $('#confirmation-modal').removeClass('hidden'));
+        $('#cancel-submit-btn').on('click', () => $('#confirmation-modal').addClass('hidden'));
+        $('#confirm-submit-btn').on('click', () => submitTest(false));
+        
+        function submitTest(isAutoSubmit) {
+            if (!isAutoSubmit) $('#confirmation-modal').addClass('hidden');
+            clearInterval(timerInterval);
+            
+            let correct = 0, incorrect = 0, notAttempted = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === null) notAttempted++;
+                else if (answer === questions[index].answer) correct++;
+                else incorrect++;
+            });
+            
+            const percentage = ((correct / questions.length) * 100).toFixed(0);
+            $('#score-percentage').text(`${percentage}%`);
+            setTimeout(() => { $('#score-circle').css('stroke-dasharray', `${percentage}, 100`); }, 100);
+
+            $('#correct-answers').text(correct);
+            $('#incorrect-answers').text(incorrect);
+            $('#not-attempted').text(notAttempted);
+            $('#obtained-marks').text(correct);
+
+            const isPassed = correct >= 30; // 50% passing marks
+            $('#passing-status-text').text(isPassed ? 'Congratulations! You Passed.' : 'Better Luck Next Time!').css('color', isPassed ? '#16a34a' : '#ef4444');
+
+            showPage('result-page');
+        }
+
+        // --- RESULT & REVIEW ---
+        $('#review-answers-btn').on('click', () => { 
+            showPage('review-page');
+            populateReviewPage('#review-content'); 
+        });
+        $('#back-to-result-btn').on('click', () => {
+            showPage('result-page');
+        });
+        $('#restart-test-btn').on('click', () => { window.location.reload(); });
+
+        function getReviewHtml(singleIndex) {
+            let reviewItemsHtml = '';
+            
+            const processQuestion = (q, index) => {
+                const userAnswer = userAnswers[index];
+                const status = userAnswer === null ? 'Not Attempted' : (userAnswer === q.answer ? 'Correct' : 'Incorrect');
+                const statusColor = { 'Correct': 'text-green-600', 'Incorrect': 'text-red-600', 'Not Attempted': 'text-yellow-500' }[status];
+                const optionsHtml = q.options.map(option => {
+                    let classes = 'option-item p-3 rounded-lg border-2 text-primary-color';
+                    if (option === q.answer) classes += ' correct-answer';
+                    if (option === userAnswer && userAnswer !== q.answer) classes += ' incorrect-answer';
+                    if (option === userAnswer) classes += ' selected-answer';
+                    return `<div class="${classes}"><label class="w-full cursor-pointer">${option}</label></div>`;
+                }).join('');
+                return `
+                    <div class="border-b border-gray-200 dark:border-[var(--border-dark)] pb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="font-bold text-primary-color">Question ${index + 1}</p>
+                            <p class="font-bold ${statusColor}">${status}</p>
+                        </div>
+                        <p class="mb-4 text-muted">${q.question}</p>
+                        <div class="space-y-2">${optionsHtml}</div>
+                    </div>`;
+            };
+
+            if (typeof singleIndex !== 'undefined') {
+                return processQuestion(questions[singleIndex], singleIndex);
+            } else {
+                 questions.forEach((q, index) => {
+                    reviewItemsHtml += processQuestion(q, index);
+                });
+                return reviewItemsHtml;
+            }
+        }
+
+        function populateReviewPage(containerId) {
+            $(containerId).html(getReviewHtml());
+        }
+
+        // --- PDF GENERATION ---
+        $('#save-pdf-btn').on('click', async function() {
+            const btn = $(this).html('<i class="fas fa-spinner fa-spin mr-2"></i>Generating...').prop('disabled', true);
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const margin = 10;
+                let yPos = margin;
+
+                const isDark = $('html').hasClass('dark');
+                const bgColor = isDark ? '#111827' : '#f8f9fa';
+
+                // --- 1. Render Result Page ---
+                const resultContainer = $(`<div class="p-8" style="width: 800px;"></div>`);
+                const resultCard = $('#result-page .main-card').clone();
+                resultCard.find('.flex.justify-center').remove(); // remove buttons
+                resultContainer.append(resultCard);
+                $('body').append(resultContainer.css({ position: 'absolute', left: '-9999px', top: 0 }));
+
+                const resultCanvas = await html2canvas(resultContainer[0], { scale: 2, backgroundColor: bgColor });
+                const resultImgData = resultCanvas.toDataURL('image/png');
+                const resultImgHeight = (resultCanvas.height * (pdfWidth - margin * 2)) / resultCanvas.width;
+                
+                pdf.addImage(resultImgData, 'PNG', margin, yPos, pdfWidth - margin * 2, resultImgHeight);
+                yPos += resultImgHeight + 5;
+                resultContainer.remove();
+
+                // --- 2. Render Review Header ---
+                const reviewHeaderContainer = $(`<div class="p-4" style="width: 800px;"></div>`);
+                const reviewHeaderCard = $(`<div class="${isDark ? 'dark main-card' : 'main-card'} p-5 md:p-8"><h1 class="text-2xl font-bold text-primary-color">Answer Review</h1></div>`);
+                reviewHeaderContainer.append(reviewHeaderCard);
+                $('body').append(reviewHeaderContainer.css({ position: 'absolute', left: '-9999px', top: 0 }));
+                
+                const headerCanvas = await html2canvas(reviewHeaderContainer[0], { scale: 2, backgroundColor: bgColor });
+                const headerImgData = headerCanvas.toDataURL('image/png');
+                const headerImgHeight = (headerCanvas.height * (pdfWidth - margin * 2)) / headerCanvas.width;
+
+                if (yPos + headerImgHeight > pdfHeight - margin) {
+                    pdf.addPage();
+                    yPos = margin;
+                }
+                pdf.addImage(headerImgData, 'PNG', margin, yPos, pdfWidth - margin * 2, headerImgHeight);
+                yPos += headerImgHeight;
+                reviewHeaderContainer.remove();
+
+                // --- 3. Render Each Question ---
+                for (let i = 0; i < questions.length; i++) {
+                    const reviewItemContainer = $(`<div class="p-4" style="width: 800px;"></div>`);
+                    const reviewItemHtml = getReviewHtml(i); 
+                    const reviewItemCard = $(`<div class="${isDark ? 'dark main-card' : 'main-card'}"><div class="p-5 md:p-8">${reviewItemHtml}</div></div>`);
+                    reviewItemContainer.append(reviewItemCard);
+                    $('body').append(reviewItemContainer.css({ position: 'absolute', left: '-9999px', top: 0 }));
+                    
+                    const itemCanvas = await html2canvas(reviewItemContainer[0], { scale: 2, backgroundColor: bgColor });
+                    const itemImgData = itemCanvas.toDataURL('image/png');
+                    const itemImgHeight = (itemCanvas.height * (pdfWidth - margin * 2)) / itemCanvas.width;
+
+                    if (yPos + itemImgHeight > pdfHeight - margin) {
+                        pdf.addPage();
+                        yPos = margin;
+                    }
+                    pdf.addImage(itemImgData, 'PNG', margin, yPos, pdfWidth - margin * 2, itemImgHeight);
+                    yPos += itemImgHeight;
+                    reviewItemContainer.remove();
+                }
+
+                pdf.save('SPSC-Assistant-Test-Result.pdf');
+
+            } catch (err) {
+                alert("Error generating PDF.");
+                console.error(err);
+            } finally {
+                btn.html('<i class="fas fa-file-pdf mr-2"></i>Save PDF').prop('disabled', false);
+            }
+        });
+
+    });
+    </script>
+</body>
+</html>
+
